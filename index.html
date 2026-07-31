@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เข้าสู่ระบบ LINE</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body style="font-family:sans-serif;text-align:center;padding-top:40px;color:#2E2A22;">
+<div id="msg">กำลังเข้าสู่ระบบด้วย LINE...</div>
+<script>
+  var LIFF_ID = '1661101652-SKhOn18X';
+  var FORM_URL = 'https://script.google.com/macros/s/AKfycbyRlj2dTB2bV2nBvDkcx6dPGDtpgvxetMV-9GzsL4mvNiRUPhP2iue7NWEPckzRdz8/exec';
+
+  function goToForm(uid, name) {
+    var url = FORM_URL + (FORM_URL.indexOf('?') === -1 ? '?' : '&') + 'line_uid=' + encodeURIComponent(uid) + '&line_name=' + encodeURIComponent(name || '');
+    window.location.href = url;
+  }
+
+  (async function () {
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      var profile = await liff.getProfile();
+      goToForm(profile.userId, profile.displayName);
+    } catch (err) {
+      document.getElementById('msg').textContent = 'เข้าสู่ระบบ LINE ไม่สำเร็จ กำลังไปที่ฟอร์มแทน...';
+      setTimeout(function () { window.location.href = FORM_URL; }, 1200);
+    }
+  })();
+</script>
+</body>
+</html>
