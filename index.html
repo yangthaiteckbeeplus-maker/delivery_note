@@ -4,7 +4,1507 @@
     <base target="_top" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <?!= include('Style'); ?>
+<style>
+  :root {
+    --bark: #26221A;
+    --bark-soft: #5B5240;
+    --latex: #ffffff;
+    --latex-deep: #F3F2ED;
+    --rubber: #6B5B3E;
+    /* แนว clean: พื้นหลังขาว/minimal สีเขียวใช้เฉพาะจุด accent (ปุ่มหลัก, สถานะ active/done,
+       หัวข้อแบรนด์, แถบขอบบาง) ไม่ใช่พื้นหลัง/กรอบทั่วทั้งระบบเหมือนเดิม -- อิงสีเขียวจริงจากโลโก้บริษัท
+       (#005629, hue 149°) เหมือนเดิม (--sky / --sun / --clay คือเฉดเขียวอ่อน-เข้มต่างระดับ ไม่ใช่สีฟ้า/
+       เหลือง/ส้ม คงชื่อตัวแปรเดิมไว้เพื่อไม่ต้องแก้จุดใช้งานทั้งไฟล์) มีแค่ --danger สีแดงที่ยังคงไว้ตามเดิม
+       เพราะเป็นสีสถานะ (error/เกินโควต้า) ไม่ใช่สีตกแต่ง */
+    --leaf: #0A7F43;
+    --leaf-deep: #005629;
+    --leaf-bright: #25D078;
+    --sky: #169855;
+    --sky-deep: #025E2F;
+    --sun: #D7F4E5;
+    --sun-deep: #0F8A4A;
+    --clay: #023C1E;
+    --clay-deep: #012814;
+    /* --line เดิมเป็นเขียวสด ใช้เป็นสีกรอบของแทบทุก element (input/card/table/toolbar ฯลฯ) ทำให้
+       ทั้งระบบดูเขียวจัดไปหมด เปลี่ยนเป็นเทาอ่อนกลาง (neutral) แทน ให้กรอบ/เส้นแบ่งทั่วไปดูเรียบ สงวน
+       สีเขียวไว้เฉพาะจุดที่ตั้งใจเน้นจริงๆ เท่านั้น (เขียนตรงเป็น var(--leaf)/var(--leaf-deep) ในจุดนั้น) */
+    --line: #E4E1D9;
+    --danger: #E11D48;
+    --danger-bg: #FDE4E9;
+    --white: #FFFFFF;
+    --shadow: 0 2px 8px rgba(38, 34, 26, 0.07);
+    --shadow-lift: 0 10px 26px rgba(38, 34, 26, 0.14);
+    --radius: 12px;
+    /* เดิมเป็น gradient เขียว ใช้เป็นพื้นหลังปุ่ม/หัวตาราง เปลี่ยนเป็นสีทึบเดียว (flat) ให้ดูเรียบขึ้น --
+       ตัวแปรนี้ยังถูกใช้แบบเดิมทุกจุด (background: var(--grad-primary)) ไม่ต้องแก้จุดใช้งาน */
+    --grad-primary: var(--leaf);
+    /* เดิมเป็น gradient เขียวอ่อนไล่เฉด ใช้เป็นพื้นหลัง .app-header ทำให้ดูมีสีสันเกินไปสำหรับแนว clean
+       เปลี่ยนเป็นสีขาวเกือบสนิท (แทบไม่มีสี) แทน */
+    --grad-header: #FAFAF9;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    color: var(--bark);
+    font-family: 'Sarabun', 'Noto Sans Thai', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    /* ขยายขนาดตัวอักษรพื้นฐานทั้งระบบ เพื่อรองรับผู้สูงวัย แต่ไล่ลดขนาดลงตามความกว้างจอ (320px-700px)
+       เพื่อไม่ให้ข้อความล้นบรรทัดบนจอแคบ -- ทุกจุดในไฟล์นี้อ้างอิงขนาดด้วย rem (สัมพัทธ์กับค่านี้เสมอ
+       ไม่ว่าจะซ้อนลึกแค่ไหน) จึงไล่ขนาดลงพร้อมกันทั้งระบบจากจุดเดียวนี้ */
+    font-size: clamp(15px, calc(15px + (100vw - 320px) * 0.0079), 18px);
+    /* background: linear-gradient(180deg, #E6F9EC 0%, #F6FCF8 60%, #FFFFFF 100%); */
+    min-height: 100vh;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+
+  /* แถบขอบบนสุดของหน้าจอ ไล่เฉดเขียวจากเข้ม (สีโลโก้) ไปอ่อน เต็มความกว้างจอเสมอ ไม่ผูกกับ
+     max-width ของ .app-wrap */
+  .top-accent-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--leaf-deep), var(--leaf), var(--leaf-bright));
+    z-index: 500;
+  }
+
+  .app-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 22px 12px 48px;
+    box-sizing: border-box;
+  }
+
+  /* ---------------- BRAND ROW (logo + company name) ---------------- */
+  .brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .brand-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .brand-text {
+    text-align: left;
+    line-height: 1.25;
+  }
+
+  .brand-name-en {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--bark);
+    letter-spacing: 0.3px;
+  }
+
+  .brand-name-th {
+    font-size: 0.74rem;
+    color: var(--bark-soft);
+    font-weight: 500;
+  }
+
+  @media (max-width: 420px) {
+    .brand-logo {
+      height: 32px;
+    }
+
+    .brand-name-en {
+      font-size: 0.74rem;
+    }
+
+    .brand-name-th {
+      font-size: 0.68rem;
+    }
+  }
+
+  /* ---------------- HEADER + STEPPER ---------------- */
+  .app-header {
+    text-align: center;
+    margin-bottom: 24px;
+    margin-top: 20px;
+    background: var(--grad-header);
+    border: 1px solid rgba(0, 86, 41, 0.14);
+    border-radius: 18px;
+    padding: 22px 16px 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .app-header h1 {
+    font-size: 1.7rem;
+    font-weight: 800;
+    margin: 0 0 2px;
+    letter-spacing: 0.2px;
+    background: linear-gradient(90deg, var(--leaf-deep), var(--leaf));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .app-header p {
+    font-weight: 700;
+    margin: 0px;
+    margin: 0 0 25px;
+    color: var(--bark-soft);
+  }
+
+  @media (max-width: 420px) {
+    .app-header {
+      padding: 18px 12px 14px;
+      border-radius: 14px;
+    }
+
+    .app-header h1 {
+      font-size: 1.35rem;
+      margin-bottom: 2px;
+    }
+
+    .app-header p {
+      font-weight: 700;
+      margin: 0px;
+      margin: 0 0 25px;
+      color: var(--bark-soft);
+    }
+  }
+
+  /* Step Button: stepper เป็น 4 ปุ่มเรียงแนวตั้งเต็มความกว้างเสมอ ทุกขนาดหน้าจอ
+     (ไม่สลับเป็นแถวแนวนอนบนจอใหญ่อีกต่อไป) เพื่อความสม่ำเสมอระหว่างมือถือและคอมพิวเตอร์ */
+  .stepper {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--line);
+    background: var(--white);
+    box-sizing: border-box;
+    opacity: 0.5;
+    transition: opacity .25s, border-color .25s, background .25s, box-shadow .25s;
+  }
+
+  .step.active {
+    opacity: 1;
+    border-color: var(--leaf);
+    background: var(--latex);
+    box-shadow: 0 0 0 3px rgba(10, 127, 67, 0.14);
+  }
+
+  .step.done {
+    opacity: 1;
+    border-color: var(--leaf-deep);
+  }
+
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--latex-deep);
+    border: 2px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--bark-soft);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    transition: all .25s;
+  }
+
+  .step.active .step-circle {
+    background: var(--grad-primary);
+    border-color: transparent;
+    color: var(--white);
+    box-shadow: 0 4px 10px rgba(0, 86, 41, 0.35);
+  }
+
+  .step.done .step-circle {
+    background: var(--leaf-deep);
+    border-color: var(--leaf-deep);
+    color: var(--white);
+  }
+
+  .step-label {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--bark-soft);
+    white-space: normal;
+    text-align: left;
+  }
+
+  .step.active .step-label {
+    color: var(--leaf-deep);
+  }
+
+  /* เฉพาะ step ที่ done และเป็นตัวก่อนหน้า step ปัจจุบันโดยตรง (เปิดใช้งานผ่าน JS
+     ด้วยคลาส step-clickable) จึงจะกดย้อนกลับได้จริง -- done เฉยๆ ไม่พอ เพราะกติกาคือ
+     ย้อนได้ทีละขั้นเท่านั้น ไม่ใช่กระโดดข้ามได้ทุก step ที่เคยผ่านมา ดังนั้น cursor: pointer
+     ต้องผูกกับ done.step-clickable ร่วมกันเท่านั้น ไม่ใช่ done เฉยๆ (ไม่เช่นนั้น step ที่
+     done แต่กดไม่ได้จริง เช่น Step 1-2 ตอนอยู่ Step 4 จะแสดง cursor pointer หลอกผู้ใช้) */
+  .step.done.step-clickable {
+    cursor: pointer;
+  }
+
+  .step.done.step-clickable:hover {
+    background: var(--latex-deep);
+  }
+
+  .step.done:not(.step-clickable) {
+    cursor: default;
+  }
+
+  .step-line {
+    /* ไม่ใช้เส้นเชื่อมระหว่างขั้นอีกต่อไป เพราะ stepper เป็นปุ่มแนวตั้งเสมอ
+       (element ยังอยู่ใน HTML เพื่อความเข้ากันได้ แต่ซ่อนไว้ไม่แสดงผล) */
+    display: none;
+  }
+
+  /* ---------------- PAGES / CARD ---------------- */
+  .page {
+    display: none;
+  }
+
+  .page.active {
+    display: block;
+    animation: fadeIn .3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card {
+    position: relative;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--leaf);
+  }
+
+  @media (max-width: 420px) {
+    .card {
+      padding: 16px;
+      border-radius: 8px;
+    }
+  }
+
+  .card h2 {
+    margin: 0 0 4px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--leaf-deep);
+  }
+
+  .subtitle {
+    margin: 0 0 20px;
+    font-size: 1.02rem;
+    color: var(--bark-soft);
+  }
+
+  /* ---------------- NOW BANNER (locked date/time) ---------------- */
+  .now-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--latex);
+    border: 1.5px solid var(--line);
+    border-left: 4px solid var(--leaf);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+
+  .now-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  .now-label {
+    font-size: 0.9rem;
+    color: var(--bark-soft);
+    font-weight: 600;
+  }
+
+  .now-value {
+    font-size: 1.25rem;
+    color: var(--bark);
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  /* ---------------- FORM ---------------- */
+  .form-grid {
+    display: grid;
+    /* grid-template-columns: 1fr 1fr; */
+    gap: 16px 20px;
+  }
+
+  @media (max-width: 600px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* หัวข้อคั่นส่วนภายใน form-grid (เช่น "แหล่งที่มาของยาง" ก่อนช่องภาค/จังหวัด) ให้กว้างเต็มแถวเสมอ
+     แทนที่จะถูกจัดเป็นช่อง grid ปกติ (ซึ่งจะแคบแค่ครึ่งเดียวบนจอกว้างที่ form-grid-main ใช้ 2 คอลัมน์) */
+  .form-grid > .subtitle {
+    grid-column: 1 / -1;
+    margin: 4px 0 0;
+  }
+
+  /* แถวภาค/จังหวัด -- บังคับ 2 คอลัมน์อยู่แถวเดียวกันเสมอ ไม่ขึ้นกับ breakpoint ของ form-grid-main
+     (ต่างจากฟิลด์อื่นที่ยังเรียงคอลัมน์เดียวบนจอแคบ) และกาง full-width เท่าหัวข้อ "แหล่งที่มาของยาง"
+     ด้านบน ไม่ถูกบีบเหลือแค่ครึ่งเดียวของ form-grid-main บนจอกว้าง (>=700px) */
+  .region-province-row {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .region-province-row .form-field {
+    min-width: 0; /* กัน select2 ดันความกว้างล้นคอลัมน์ตอนช่องแคบ */
+  }
+
+  /* ตารางฟอร์มหลักของขั้นตอนที่ 1 -- ใช้ 2 คอลัมน์บนจอแท็บเล็ต/เดสก์ท็อป (>=700px) เพื่อไม่ให้ฟอร์ม
+     ยาวเปล่าเปลืองพื้นที่แนวนอน ส่วนจอมือถือยังคงเรียงคอลัมน์เดียวเหมือนเดิมผ่านกฎ .form-grid ด้านบน
+     (ตั้งใจไม่แตะ .form-grid ซ้อนใน (รหัสผู้ขาย + ชื่อที่แสดงอัตโนมัติ) ให้ยังเรียงตามเดิมเสมอ) */
+  @media (min-width: 700px) {
+    .form-grid-main {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .form-field label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--leaf-deep);
+  }
+
+  .req {
+    color: var(--clay);
+  }
+
+  .form-field input,
+  .form-field select {
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 13px 14px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    color: var(--bark);
+    background: var(--latex);
+    min-height: 50px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+
+  .form-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A4438' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 40px;
+  }
+
+  /* select[multiple] แสดงเป็นกล่องรายการเลือกได้หลายรายการ (listbox) ไม่ใช่ dropdown บรรทัดเดียว
+     เหมือน select ปกติ เอาลูกศร dropdown/appearance ที่ override ไว้ด้านบนออก คืนสไตล์เนทีฟของเบราว์เซอร์
+     กลับมา เพราะไอคอนลูกศรตรงกลางแนวตั้งของกล่องหลายบรรทัดจะดูแปลก */
+  .form-field select[multiple] {
+    appearance: listbox;
+    -webkit-appearance: listbox;
+    background-image: none;
+    padding: 6px;
+    padding-right: 6px;
+    min-height: auto;
+  }
+
+  .form-field select[multiple] option {
+    padding: 8px 10px;
+    border-radius: 6px;
+  }
+
+  .form-field select[multiple] option:checked {
+    background: var(--leaf);
+    color: var(--white);
+  }
+
+  /* select2 (ภาค/จังหวัด): เข้าครอบ select[multiple] เดิมด้วย UI ของตัวเอง (ซ่อน select จริงไว้)
+     กฎ select[multiple] ด้านบนเลยไม่มีผลกับตาที่เห็นอีกต่อไป ปรับธีมของ select2 ให้เข้ากับส่วนที่เหลือ
+     ของฟอร์ม (กรอบ/สีเขียวเดียวกับปุ่มและ input อื่นๆ) แทนธีมสีฟ้า default ของปลั๊กอิน */
+  /* ให้กล่อง select2 หน้าตาเหมือน .form-field input/select ปกติทุกจุด (border/รัศมีขอบ/สี/ขนาดตัวอักษร)
+     ไม่ใช่แค่ border/border-radius/min-height เหมือนเดิม เพื่อให้ดูเป็นชุดเดียวกับช่องกรอกอื่นในฟอร์ม */
+  .select2-container--default .select2-selection--multiple {
+    border: 1.5px solid var(--line) !important;
+    border-radius: 8px !important;
+    background: var(--latex) !important;
+    color: var(--bark);
+    min-height: 50px !important;
+    height: auto !important;
+    box-sizing: border-box;
+    padding: 13px 14px !important;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  .select2-container--default .select2-search--inline .select2-search__field {
+    font-family: inherit;
+    font-size: 1.1rem;
+    color: var(--bark);
+    line-height: 1;
+    padding: 3px 4px;
+    margin: 0;
+}
+
+  .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: var(--leaf) !important;
+    box-shadow: 0 0 0 3px rgba(10, 127, 67, 0.18);
+  }
+
+  /* __rendered คือ <ul> ที่ครอบทั้ง badge ที่เลือกไว้และช่องค้นหา (<li> สุดท้าย) ของเดิม select2 ใช้
+     float/inline-block จัดเรียง ซึ่งเป็นสาเหตุที่ทำให้ตัวอักษรโดนตัด/badge ชิดขอบเมื่อเราเปลี่ยน
+     font-size ให้ใหญ่กว่า default ของปลั๊กอิน (line-height เดิมของ select2 คำนวณมาจาก font-size
+     default ที่เล็กกว่านี้) เปลี่ยนมาใช้ flex + gap แทน ให้ควบคุมระยะห่างและความสูงบรรทัดได้ตรงๆ
+     ไม่ต้องพึ่งค่า line-height ที่ผูกกับ font-size เดิมของปลั๊กอิน */
+  .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 0 !important;
+    margin: 0;
+    line-height: normal;
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    display: inline-flex;
+    /* select2 วาง DOM เป็น [ปุ่ม × (remove)] ตามด้วย [ข้อความ] (__choice__display) เสมอ -- ใช้
+       row-reverse สลับตำแหน่ง "แสดงผล" ให้ข้อความขึ้นก่อนแล้ว × ตามหลัง โดยไม่ต้องยุ่งกับ DOM จริงของ
+       ปลั๊กอิน (reverse แค่ทิศทาง flex เท่านั้น ลำดับ DOM/tab เดิมไม่เปลี่ยน) */
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 5px;
+    background: var(--leaf) !important;
+    border: none !important;
+    color: var(--white) !important;
+    border-radius: 999px !important;
+    padding: 5px 8px 5px 12px !important;
+    font-size: 1rem;
+    line-height: 1.3;
+    margin: 2px !important; /* ระยะห่างระหว่าง badge ใช้ gap ของ __rendered แทน ไม่ต้องพึ่ง margin ซ้อนกัน */
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    display: inline-flex;
+    align-items: center;
+    color: var(--white) !important;
+    border: none !important;
+    font-size: 1.05rem;
+    line-height: 1;
+    /* ระยะห่างระหว่าง × กับข้อความใช้ gap ของ .select2-selection__choice (parent) แทน --
+       margin-right เดิมพังหลัง flex-direction: row-reverse เพราะปุ่มนี้ (ลำดับ DOM แรก) กลายเป็น
+       ฝั่งขวาสุดตามภาพ margin-right เดิมเลยไปดันขอบขวาของ badge แทนที่จะเว้นจากข้อความ */
+  }
+
+  /* select2 v4.1 ห่อตัว "×" ไว้ในอีก <span aria-hidden="true"> ชั้นในอีกที ตัว span ชั้นในนี้มี
+     line-height ของตัวเองที่ไม่ได้อยู่ในการควบคุมของ inline-flex ชั้นนอก ทำให้ "×" ลอยไม่ตรงกลาง
+     แนวตั้งของ badge บังคับ inline-flex + line-height:1 ซ้ำอีกชั้นตรงนี้โดยเฉพาะ */
+  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove span[aria-hidden="true"] {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: var(--latex-deep) !important;
+    background: transparent !important;
+  }
+
+  /* ช่องค้นหา (<li class="select2-search--inline">) เป็น flex item ใน __rendered ที่เปลี่ยนเป็น flex
+     ไปแล้วด้านบน แต่ไม่เคยได้ความกว้างที่ยืดหยุ่นมาก่อน จึงตกไปใช้ความกว้าง default เล็กๆ ของ
+     <input> เปล่าเบราว์เซอร์ (~ไม่กี่สิบ px) พอพิมพ์ยาวกว่านั้นตัวอักษรเลยโดนตัด/ไม่โชว์เต็มบรรทัด --
+     บังคับให้ยืดเต็มพื้นที่ที่เหลือของแถวแทน */
+  .select2-container--default .select2-selection--multiple .select2-search--inline {
+    flex: 1 1 auto;
+    min-width: 60px;
+  }
+
+  .select2-container--default .select2-search--inline .select2-search__field {
+    width: 100% !important;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1.1rem;
+    color: #000;
+    line-height: 1;
+    padding: 3px 4px;
+    margin: 0;
+  }
+
+  .select2-container--default .select2-selection--multiple.select2-selection--disabled {
+    background: var(--latex-deep) !important;
+    cursor: not-allowed;
+  }
+
+  /* select2 dropdown ถูก append แยกไปอยู่นอก .form-field (มักต่อท้าย body) จึง style เป็น global
+     selector ไม่ได้ scope ผ่าน .form-field เหมือน element อื่น -- ชื่อคลาสเหล่านี้เจาะจงเฉพาะปลั๊กอิน
+     select2 พออยู่แล้ว ไม่ชนกับส่วนอื่นของระบบ */
+  .select2-dropdown {
+    border-color: var(--line) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+  }
+
+  .select2-search--dropdown .select2-search__field {
+    border: 1.5px solid var(--line) !important;
+    border-radius: 6px !important;
+    padding: 8px !important;
+    font-family: inherit;
+    font-size: 1.05rem;
+    color: var(--bark);
+  }
+
+  .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: var(--leaf) !important;
+  }
+
+  /* ฟิลด์ที่ validate ไม่ผ่าน (setFieldError ใส่คลาส .invalid ให้ select เดิม) select2 ซ่อน select
+     เดิมไว้และวาง .select2-container ต่อท้ายเป็น sibling ทันที จึงใช้ + เลือก sibling ถัดมาแทน */
+  #inp-region.invalid + .select2-container .select2-selection--multiple,
+  #inp-province.invalid + .select2-container .select2-selection--multiple {
+    border-color: var(--danger) !important;
+    background-color: var(--danger-bg) !important;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus {
+    outline: none;
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 3px rgba(10, 127, 67, 0.18);
+    background-color: var(--white);
+  }
+
+  .form-field input.invalid,
+  .form-field select.invalid {
+    border-color: var(--danger);
+    background-color: var(--danger-bg);
+  }
+
+  .error-msg {
+    font-size: 0.88rem;
+    color: var(--danger);
+    min-height: 1em;
+    display: block;
+  }
+
+  /* ---------------- SUPPLIER NAME HINT (next to seller-id input) ---------------- */
+  .input-with-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  input[readonly] {
+    background-color: #DCDCDC;
+  }
+
+  .input-with-hint input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .supplier-name-hint {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .supplier-name-hint.loading {
+    color: var(--bark-soft);
+    font-weight: 500;
+  }
+
+  .supplier-name-hint.found {
+    color: #000;
+  }
+
+  .supplier-name-hint.not-found {
+    color: var(--danger);
+  }
+
+  @media (max-width: 480px) {
+    .input-with-hint {
+      flex-wrap: wrap;
+    }
+
+    .supplier-name-hint {
+      max-width: 100%;
+      flex-basis: 100%;
+    }
+  }
+
+  /* ---------------- BUTTONS ---------------- */
+  .actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .actions-right {
+    justify-content: flex-end;
+  }
+
+  .actions-between {
+    justify-content: space-between;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 1.08rem;
+    font-weight: 600;
+    padding: 14px 26px;
+    min-height: 54px;
+    cursor: pointer;
+    transition: transform .1s, box-shadow .15s, background .15s, filter .15s;
+    box-shadow: var(--shadow);
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    background: var(--grad-primary);
+    color: var(--white);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.06);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .btn-secondary {
+    background: var(--latex-deep);
+    color: var(--bark);
+    box-shadow: none;
+  }
+
+  .btn-secondary:hover {
+    background: var(--line);
+    color: white;
+  }
+
+  /* select-all/unselect-all เป็นปุ่มรอง (utility) ไม่ใช่ CTA หลักของหน้า เลยไม่ใช้พื้นเขียวเต็ม
+     เหมือน btn-primary -- select-all ใช้ outline เขียว (ยังสื่อว่าเป็นการกระทำเชิงบวก) ส่วน
+     unselect-all ใช้โทนกลาง (เทา) แบบเดียวกับ btn-secondary เพราะเป็นแค่การล้างค่า ไม่ใช่ action หลัก */
+  .btn-select-all {
+    background: var(--white);
+    color: var(--leaf-deep);
+    border: 1.5px solid var(--leaf);
+    box-shadow: none;
+  }
+
+  .btn-select-all:hover {
+    background: var(--latex-deep);
+  }
+
+  .btn-unselect-all {
+    background: var(--latex-deep);
+    color: var(--bark);
+    box-shadow: none;
+  }
+
+  .btn-unselect-all:hover {
+    background: var(--line);
+  }
+
+  .btn-success {
+    background: var(--grad-primary);
+    color: var(--white);
+  }
+
+  .btn-success:hover {
+    filter: brightness(1.06);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: none;
+    box-shadow: none;
+  }
+
+  @media (max-width: 480px) {
+    .actions {
+      flex-direction: column-reverse;
+    }
+
+    .actions .btn {
+      width: 100%;
+    }
+  }
+
+  /* ---------------- SUMMARY CARDS ---------------- */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  @media (max-width: 560px) {
+    .summary-row {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .summary-row {
+      gap: 8px;
+    }
+
+    .summary-card {
+      padding: 10px 8px;
+    }
+
+    .summary-value {
+      font-size: 1.5rem;
+    }
+
+    .summary-label {
+      font-size: 0.95rem;
+      line-height: 1.25;
+    }
+  }
+
+  .summary-card {
+    background: var(--latex);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--leaf);
+    border-radius: 10px;
+    padding: 14px 14px;
+    text-align: center;
+    transition: background .2s, border-color .2s;
+  }
+
+  .summary-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--leaf-deep);
+  }
+
+  .summary-label {
+    font-size: 1rem;
+    color: var(--bark-soft);
+    margin-top: 2px;
+  }
+
+  /* การ์ดสรุป 3 ใบ (เป้าหมาย/เลือกแล้ว/คงเหลือ) ไล่เฉดเขียวอ่อน-เข้มต่างระดับกันทีละใบ (เฉดเดียว)
+     เพื่อแยกความหมายแต่ละใบ แทนที่จะใช้สีเขียวเข้มเดียวซ้ำกันทั้ง 3 ใบเหมือนเดิม */
+  .summary-card:nth-child(1) {
+    border-top-color: var(--sky);
+  }
+
+  .summary-card:nth-child(1) .summary-value {
+    color: var(--sky-deep);
+  }
+
+  .summary-card:nth-child(2) {
+    border-top-color: var(--leaf);
+  }
+
+  .summary-card:nth-child(2) .summary-value {
+    color: var(--leaf-deep);
+  }
+
+  .summary-card:nth-child(3) {
+    border-top-color: var(--sun-deep);
+  }
+
+  .summary-card:nth-child(3) .summary-value {
+    color: var(--sun-deep);
+  }
+
+  #sum-remain-card.over-limit {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+    border-top-color: var(--danger);
+  }
+
+  #sum-remain-card.over-limit .summary-value {
+    color: var(--danger);
+  }
+
+  /* ---------------- TOOLBAR (search) ---------------- */
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; */
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+
+  #search-box {
+    flex: 1;
+    /* max-width: 320px; */
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 13px 14px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    min-height: 50px;
+  }
+
+  #search-box:focus {
+    outline: none;
+    border-color: var(--leaf);
+  }
+
+  .loading-text {
+    font-size: 0.9rem;
+    color: var(--bark-soft);
+  }
+
+  @media (max-width: 560px) {
+    /* จอมือถือ/แท็บเล็ตแคบ: เรียงปุ่ม/ช่องค้นหาเป็นแนวตั้งเต็มความกว้างทีละแถวแทนแถวเดียว เพราะข้อความไทย
+       อย่าง "ยกเลิกที่เลือกทั้งหมด" ไม่มีเว้นวรรคให้ตัดบรรทัด เบราว์เซอร์บางตัวเลยไม่ยอมย่อความกว้างปุ่ม
+       ทำให้ปุ่มล้นจอถ้ายังพยายามเรียงคู่กันในแถวเดียว */
+    .table-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    #search-box {
+      max-width: 100%;
+      flex-basis: 100%;
+    }
+
+    .table-toolbar .btn {
+      width: 100%;
+    }
+  }
+
+  /* ---------------- CARD LIST (Step 2 farm selection) ---------------- */
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--latex);
+    contain: content;
+    /* จำกัดผลของการเปลี่ยนแปลงในลูก ไม่ให้บังคับ browser คำนวณ layout ของหน้าทั้งหมดซ้ำ */
+  }
+
+  .farm-card {
+    background: #f3f3f3;
+    border-left: 5px solid #9AA08F;
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: background .15s, border-color .15s, box-shadow .15s;
+    contain: layout style;
+    /* จำกัดผลของ reflow/style recalculation ให้อยู่แค่การ์ดนี้ ไม่ลามไปคำนวณการ์ดอื่นทั้ง list */
+  }
+
+  .farm-card.is-checked {
+    border-left-color: var(--leaf);
+    background: #ECFDF3;
+    box-shadow: 0 2px 8px rgba(0, 86, 41, 0.12);
+  }
+
+  .farm-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .farm-card-meta {
+    font-size: 1rem;
+    color: var(--bark-soft);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .farm-card-meta .sep {
+    margin: 0 4px;
+    opacity: 0.5;
+  }
+
+  /* Checkbox (เลือกฟาร์ม) */
+  .checkbox-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .checkbox-wrap .chk {
+    width: 28px;
+    height: 28px;
+    margin: 0;
+    accent-color: var(--leaf);
+    cursor: pointer;
+  }
+
+  .farm-card-main {
+    /* display:flex; */
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 8px;
+    gap: 10px;
+  }
+
+  .farm-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--bark);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .farm-yield {
+    font-size: 1rem;
+    color: var(--leaf-deep);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .farm-yield .yield-label {
+    font-size: 0.92rem;
+    color: var(--bark-soft);
+    font-weight: 600;
+    display: block;
+    /* text-align:right; */
+  }
+
+  .farm-card-qty {
+    display: none;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .farm-card.is-checked .farm-card-qty {
+    display: flex;
+  }
+
+  .farm-card-qty-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .farm-card-qty label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--bark);
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.25;
+  }
+
+  @media (max-width: 380px) {
+    .farm-card-qty {
+      gap: 6px;
+    }
+
+    .farm-card-qty label {
+      font-size: 0.6rem;
+    }
+
+    .farm-card-qty .qty-input {
+      padding: 8px 6px;
+      font-size: 0.92rem;
+      min-height: 40px;
+    }
+  }
+
+  .qty-input {
+    flex: 1;
+    min-width: 0;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    min-height: 44px;
+    text-align: right;
+  }
+
+  .qty-input:disabled {
+    background: var(--latex-deep);
+    color: var(--bark-soft);
+    cursor: not-allowed;
+  }
+
+  .qty-input:focus {
+    outline: none;
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 3px rgba(10, 127, 67, 0.18);
+  }
+
+  .qty-input.invalid {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+  }
+
+  /* ช่อง "ประมาณการน้ำหนักยางแห้ง" -- คำนวณอัตโนมัติจากน้ำหนักยางเปียก x สูตร ผู้ใช้แก้ไขเองไม่ได้ */
+  .qty-input-dry {
+    background: #ECFDF5;
+    border-color: var(--sky);
+    color: var(--sky-deep);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .qty-input-dry:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: var(--line);
+  }
+
+  .qty-unit {
+    font-size: 0.92rem;
+    color: var(--bark-soft);
+    white-space: nowrap;
+  }
+
+  .rate-badge {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--white);
+    background: var(--leaf-deep);
+    border-radius: 999px;
+    padding: 1px 8px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .no-results {
+    text-align: center;
+    color: var(--bark-soft);
+    font-size: 1rem;
+    padding: 24px 0;
+  }
+
+  /* ---------------- TOAST ---------------- */
+  .toast {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: linear-gradient(135deg, var(--danger), #BE123C);
+    color: var(--white);
+    padding: 14px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-lift);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 999;
+    max-width: 90vw;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  .toast.success {
+    background: var(--grad-primary);
+  }
+
+  /* ---------------- OVERLAY ---------------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(14, 40, 24, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 1000;
+  }
+
+  .overlay.show {
+    display: flex;
+  }
+
+  .spinner {
+    width: 42px;
+    height: 42px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .overlay-text {
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1.08rem;
+  }
+
+  /* ---------------- REPORT OVERLAY (แสดงรายงานหลังบันทึกในหน้าเดิม แทนเปิดแท็บใหม่) ---------------- */
+  .report-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--white);
+    display: none;
+    flex-direction: column;
+    z-index: 1100; /* อยู่เหนือ .overlay (1000) เผื่อกรณีซ้อนกันชั่วครู่ตอน transition */
+  }
+
+  .report-overlay.show {
+    display: flex;
+  }
+
+  .report-overlay-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--latex-deep);
+    border-bottom: 1.5px solid var(--line);
+  }
+
+  .report-frame {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* ---------------- STEP 3: CONFIRM SUPPLIER + SIGNATURE ---------------- */
+  .confirm-supplier {
+    background: var(--latex);
+    border: 1.5px solid var(--line);
+    border-left: 4px solid var(--leaf);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+  }
+
+  .confirm-supplier-label {
+    font-size: 0.95rem;
+    color: var(--bark-soft);
+    font-weight: 600;
+  }
+
+  .confirm-supplier-name {
+    font-size: 1.4rem;
+    color: var(--bark);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .signature-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .signature-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bark);
+  }
+
+  .signature-canvas-wrap {
+    position: relative;
+    border: 1.5px dashed var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    overflow: hidden;
+    touch-action: none;
+    /* ป้องกันการ scroll หน้าจอขณะลากนิ้ววาดลายเซ็นบนมือถือ */
+  }
+
+  .signature-canvas {
+    display: block;
+    width: 100%;
+    height: 260px;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  .signature-canvas.invalid {
+    outline: 2px solid var(--danger);
+    outline-offset: -2px;
+  }
+
+  .signature-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--bark-soft);
+    font-size: 1.1rem;
+    font-weight: 500;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+
+  .signature-placeholder.hidden {
+    display: none;
+  }
+
+  .signature-tools {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-sm {
+    padding: 9px 18px;
+    min-height: 40px;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 480px) {
+    .signature-canvas {
+      height: 220px;
+    }
+  }
+
+  /* ---------------- STEP 4: พรีวิวสรุปก่อนบันทึก ---------------- */
+  .preview-section {
+    margin-bottom: 26px;
+  }
+
+  .preview-section-title {
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: var(--leaf-deep);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--line);
+  }
+
+  .preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+  }
+
+  @media (max-width: 600px) {
+    .preview-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .preview-item {
+    background: var(--latex);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--sky);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .preview-item:nth-child(3n+2) {
+    border-left-color: var(--leaf);
+  }
+
+  .preview-item:nth-child(3n+3) {
+    border-left-color: var(--sun);
+  }
+
+  .preview-item-label {
+    font-size: 0.88rem;
+    color: var(--bark-soft);
+    font-weight: 600;
+  }
+
+  .preview-item-value {
+    font-size: 1.12rem;
+    color: var(--bark);
+    font-weight: 700;
+    margin-top: 2px;
+    word-break: break-word;
+  }
+
+  .preview-table-wrap {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 50vh;
+  }
+
+  .preview-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+
+  .preview-table th,
+  .preview-table td {
+    padding: 11px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* กำหนดสัดส่วนความกว้างแต่ละคอลัมน์รวมกัน 100% เสมอ (table-layout: fixed) เพื่อไม่ให้ตารางล้นออก
+     นอกกรอบจนต้องเลื่อนแนวนอน แม้เนื้อหาบางช่อง (เช่น ชื่อเกษตรกรยาว หรือหัวคอลัมน์ภาษาอังกฤษ) จะยาว
+     ก็จะตัดขึ้นบรรทัดใหม่แทน (word-break) ไม่ดันความกว้างคอลัมน์อื่น */
+  .preview-table th:nth-child(1),
+  .preview-table td:nth-child(1) { width: 15%; }
+
+  .preview-table th:nth-child(2),
+  .preview-table td:nth-child(2) { width: 21%; }
+
+  .preview-table th:nth-child(3),
+  .preview-table td:nth-child(3) { width: 11%; }
+
+  .preview-table th:nth-child(4),
+  .preview-table td:nth-child(4) { width: 18%; }
+
+  .preview-table th:nth-child(5),
+  .preview-table td:nth-child(5) { width: 17.5%; }
+
+  .preview-table th:nth-child(6),
+  .preview-table td:nth-child(6) { width: 17.5%; }
+
+  .preview-table th {
+    background: var(--grad-primary);
+    color: var(--white);
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .preview-table td.num,
+  .preview-table th.num {
+    text-align: right;
+  }
+
+  .preview-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .preview-table tfoot td {
+    font-weight: 700;
+    background: var(--latex);
+    border-top: 2px solid var(--line);
+    border-bottom: none;
+    color: var(--leaf-deep);
+  }
+
+  @media (max-width: 480px) {
+
+    .preview-table th,
+    .preview-table td {
+      padding: 8px 6px;
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-width: 380px) {
+
+    .preview-table th,
+    .preview-table td {
+      padding: 6px 4px;
+      font-size: 0.76rem;
+    }
+  }
+
+  .preview-signature-wrap {
+    border: 1.5px dashed var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .preview-signature-img {
+    max-width: 100%;
+    height: 140px;
+    object-fit: contain;
+  }
+</style>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
