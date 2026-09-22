@@ -1913,10 +1913,10 @@
          มาจากหน้า liffbridge ซึ่ง login ผ่าน LIFF เสร็จแล้วก่อน redirect เข้ามาที่นี่) หน้านี้จึงไม่ต้อง
          เรียก LIFF SDK เองอีกเลย -->
     <script>
-      window.SERVER_LINE_USER_ID = <?!= JSON.stringify(serverLineUserId || '') ?>;
+      window.SERVER_LINE_USER_ID = JSON.stringify(serverLineUserId || '');
       // รหัสผู้ขายยางที่เคยผูกไว้กับ LINE userId นี้จากครั้งก่อน (ถ้ามี) -- ใช้ปูพื้น Step 1 อัตโนมัติ
       // ตั้งแต่เปิดลิงก์ (ดู getBoundSupplierIdForLineUser_ ใน Code.js และ bootstrap ท้าย JsStep1)
-      window.PREFILL_SUPPLIER_ID = <?!= JSON.stringify(prefillSupplierId || '') ?>;
+      window.PREFILL_SUPPLIER_ID = JSON.stringify(prefillSupplierId || '');
     </script>
 
     <!-- select2 (+ jQuery ที่ select2 ต้องใช้) โหลดก่อน JsStep1 เพราะ initRegionProvinceSelect2()
