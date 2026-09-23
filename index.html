@@ -1913,10 +1913,15 @@
          มาจากหน้า liffbridge ซึ่ง login ผ่าน LIFF เสร็จแล้วก่อน redirect เข้ามาที่นี่) หน้านี้จึงไม่ต้อง
          เรียก LIFF SDK เองอีกเลย -->
     <script>
-      window.SERVER_LINE_USER_ID = JSON.stringify(serverLineUserId || '');
+      // serverLineUserId / prefillSupplierId เป็นตัวแปรฝั่ง Server เท่านั้น (ตั้งค่าผ่าน tpl.serverLineUserId
+      // และ tpl.prefillSupplierId ใน doGet) ต้องอ่านผ่าน scriptlet <?!= ?> ของ Apps Script เพื่อให้ค่าจริง
+      // ถูกแทรกเป็น JSON string literal ลงในหน้า HTML ที่ส่งไปเบราว์เซอร์ -- อ้างอิงชื่อตัวแปรตรงๆ แบบเดิม
+      // (ไม่มี scriptlet ครอบ) จะกลายเป็นข้อความ "serverLineUserId"/"prefillSupplierId" เปล่าๆ ในหน้าเว็บ
+      // ทำให้เบราว์เซอร์มองว่าเป็นตัวแปร JS ที่ไม่เคยถูกประกาศไว้เลย (ReferenceError: ... is not defined)
+      window.SERVER_LINE_USER_ID = <?!= JSON.stringify(serverLineUserId || '') ?>;
       // รหัสผู้ขายยางที่เคยผูกไว้กับ LINE userId นี้จากครั้งก่อน (ถ้ามี) -- ใช้ปูพื้น Step 1 อัตโนมัติ
       // ตั้งแต่เปิดลิงก์ (ดู getBoundSupplierIdForLineUser_ ใน Code.js และ bootstrap ท้าย JsStep1)
-      window.PREFILL_SUPPLIER_ID = JSON.stringify(prefillSupplierId || '');
+      window.PREFILL_SUPPLIER_ID = <?!= JSON.stringify(prefillSupplierId || '') ?>;
     </script>
 
     <!-- select2 (+ jQuery ที่ select2 ต้องใช้) โหลดก่อน JsStep1 เพราะ initRegionProvinceSelect2()
